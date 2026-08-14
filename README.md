@@ -165,13 +165,6 @@ Your chatbot will be live with a free SSL-secured domain in under a minute!
 - **Server-Side API Calls**: Your `GEMINI_API_KEY` is only used on the server side in `app/api/chat/route.ts` and is **never exposed** to the client browser.
 - **Local Storage**: All chat histories and user accounts are saved locally on the client's device, ensuring complete privacy.
 
----
-
-## 📄 License
-
-This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
-
----
 
 <div align="center">
   <sub>Built with ❤️ by <a href="https://github.com/Mahadebmaity">Mahadeb Maity</a> using Google Gemini and Next.js</sub>
