@@ -141,25 +141,37 @@ export default function Sidebar({
           ) : (
             <div
               className="sidebar-user-pill"
-              onClick={() => { onOpenAuth(); onClose(); }}
               style={{ justifyContent: "space-between" }}
               role="button"
               tabIndex={0}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1, cursor: "pointer" }}
+                onClick={() => { onOpenAuth(); onClose(); }}
+              >
                 <div className="sidebar-user-avatar">👤</div>
                 <div>
                   <div className="sidebar-user-name" style={{ fontSize: "12.5px" }}>Guest Mode</div>
-                  <div className="sidebar-user-role">Sign in to save</div>
+                  <div className="sidebar-user-role">Sign in to sync</div>
                 </div>
               </div>
-              <button
-                className="modal-primary-btn"
-                style={{ width: "auto", padding: "4px 10px", fontSize: "11.5px", margin: 0 }}
-                onClick={(e) => { e.stopPropagation(); onOpenAuth(); onClose(); }}
-              >
-                Sign In
-              </button>
+              <div className="sidebar-actions-row" onClick={(e) => e.stopPropagation()}>
+                <button
+                  className="sidebar-mini-btn"
+                  onClick={() => { onOpenSettings(); onClose(); }}
+                  title="Settings & API Key"
+                  aria-label="Open Settings"
+                >
+                  ⚙️
+                </button>
+                <button
+                  className="modal-primary-btn"
+                  style={{ width: "auto", padding: "4px 8px", fontSize: "11px", margin: 0 }}
+                  onClick={() => { onOpenAuth(); onClose(); }}
+                >
+                  Sign In
+                </button>
+              </div>
             </div>
           )}
         </div>

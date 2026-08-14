@@ -51,8 +51,9 @@ export default function Home() {
 
       try {
         const headers: Record<string, string> = { "Content-Type": "application/json" };
-        if (user?.preferences?.apiKey) {
-          headers["x-gemini-api-key"] = user.preferences.apiKey;
+        const customKey = user?.preferences?.apiKey || (typeof window !== "undefined" ? localStorage.getItem("my-assistant-api-key") : null);
+        if (customKey && customKey.trim()) {
+          headers["x-gemini-api-key"] = customKey.trim();
         }
 
         const response = await fetch("/api/chat", {
@@ -211,6 +212,15 @@ export default function Home() {
             </h2>
           </div>
           <div className="topbar-actions">
+            <button
+              className="icon-btn"
+              onClick={() => setIsSettingsOpen(true)}
+              title="Settings & API Key (⚙️)"
+              aria-label="Open Settings"
+              id="settings-topbar-btn"
+            >
+              ⚙️
+            </button>
             <ExportButton
               messages={activeSession?.messages ?? []}
               sessionTitle={activeSession?.title ?? "Chat"}
