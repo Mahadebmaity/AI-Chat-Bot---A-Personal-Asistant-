@@ -11,7 +11,7 @@ export default function ExportButton({ messages, sessionTitle }: ExportButtonPro
   const [showMenu, setShowMenu] = useState(false);
 
   function formatAsText(): string {
-    const header = `My Assistant — ${sessionTitle}\nExported: ${new Date().toLocaleString()}\n${"=".repeat(50)}\n\n`;
+    const header = `Your Assistant — ${sessionTitle}\nExported: ${new Date().toLocaleString()}\n${"=".repeat(50)}\n\n`;
     return (
       header +
       messages
@@ -26,7 +26,7 @@ export default function ExportButton({ messages, sessionTitle }: ExportButtonPro
 
   function formatAsMarkdown(): string {
     const date = new Date().toLocaleString();
-    let md = `# My Assistant — ${sessionTitle}\n\n> Exported on ${date}\n\n---\n\n`;
+    let md = `# Your Assistant — ${sessionTitle}\n\n> Exported on ${date}\n\n---\n\n`;
     messages.forEach((m) => {
       const who = m.role === "user" ? "**You**" : "**Assistant** 🤖";
       const time = new Date(m.timestamp).toLocaleTimeString();

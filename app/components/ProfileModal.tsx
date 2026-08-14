@@ -47,7 +47,7 @@ export default function ProfileModal({
             <div className="auth-brand-badge">👤</div>
             <h2 className="modal-title">Guest Profile</h2>
             <p className="modal-subtitle">
-              You are currently using My Assistant as a guest. Sign in to save your personal preferences and customize your AI experience.
+              You are currently using Your Assistant as a guest. Sign in to save your personal preferences and customize your AI experience.
             </p>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "20px" }}>

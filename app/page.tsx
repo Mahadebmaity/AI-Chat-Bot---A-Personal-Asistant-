@@ -241,7 +241,7 @@ export default function Home() {
               ☰
             </button>
             <h2 className="chat-title">
-              {activeSession?.title || "My Assistant"}
+              {activeSession?.title || "Your Assistant"}
             </h2>
           </div>
           <div className="topbar-actions">

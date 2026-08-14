@@ -59,7 +59,7 @@ export default function Sidebar({
         <div className="sidebar-header">
           <div className="sidebar-brand">
             <div className="brand-logo" aria-hidden="true">🤖</div>
-            <span className="brand-name">My Assistant</span>
+            <span className="brand-name">Your Assistant</span>
           </div>
           <button
             className="new-chat-btn"

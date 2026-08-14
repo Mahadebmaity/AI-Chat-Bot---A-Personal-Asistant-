@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
 
-const BASE_SYSTEM_INSTRUCTION = `You are "My Assistant", a helpful, friendly, and knowledgeable AI assistant powered by Google Gemini. 
+const BASE_SYSTEM_INSTRUCTION = `You are "Your Assistant", a helpful, friendly, and knowledgeable AI assistant powered by Google Gemini. 
 
 Your traits:
 - Clear, concise, and well-structured responses

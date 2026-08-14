@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🤖 AI Chat Bot — A Personal Assistant
+# 🤖 Your Assistant — AI Chatbot
 
 **A full-featured, intelligent AI chatbot powered by Google Gemini and built with Next.js 14.**  
 *Real-time streaming responses, multi-session chat, voice input, AI personalization, authentication, and customizable themes.*

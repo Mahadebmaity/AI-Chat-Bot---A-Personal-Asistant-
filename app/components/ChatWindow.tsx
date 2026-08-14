@@ -47,7 +47,7 @@ export default function ChatWindow({
       <div className="chat-window">
         <div className="welcome-screen">
           <div className="welcome-logo" aria-hidden="true">🤖</div>
-          <h1 className="welcome-title">Hello! I&apos;m My Assistant</h1>
+          <h1 className="welcome-title">Hello! I&apos;m Your Assistant</h1>
           <p className="welcome-subtitle">
             Powered by Google Gemini. Ask me anything — I&apos;m here to help with writing,
             coding, research, and more.

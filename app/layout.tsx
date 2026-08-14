@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "My Assistant — AI Chat powered by Gemini",
+  title: "Your Assistant — AI Chat powered by Gemini",
   description:
     "A powerful AI chatbot powered by Google Gemini. Ask anything, get instant answers with a beautiful chat interface.",
   keywords: ["AI chatbot", "Gemini AI", "chat assistant", "Google AI"],

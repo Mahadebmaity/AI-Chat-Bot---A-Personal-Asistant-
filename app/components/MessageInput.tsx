@@ -288,7 +288,7 @@ export default function MessageInput({
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder={isRecording ? "Listening to your voice..." : "Message My Assistant…"}
+          placeholder={isRecording ? "Listening to your voice..." : "Message Your Assistant…"}
           rows={1}
           disabled={isLoading}
           aria-label="Type your message"
