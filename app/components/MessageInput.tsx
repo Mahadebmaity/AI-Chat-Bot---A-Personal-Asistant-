@@ -10,6 +10,7 @@ const MODELS = [
 
 interface MessageInputProps {
   onSend: (message: string, model: string) => void;
+  onStop?: () => void;
   isLoading: boolean;
   initialValue?: string;
   onModelChange?: (model: string) => void;
@@ -19,6 +20,7 @@ interface MessageInputProps {
 
 export default function MessageInput({
   onSend,
+  onStop,
   isLoading,
   initialValue = "",
   onModelChange,
@@ -313,24 +315,32 @@ export default function MessageInput({
             {isRecording ? "⏹" : "🎤"}
           </button>
 
-          {/* Send Button */}
-          <button
-            className="send-btn"
-            onClick={handleSend}
-            disabled={!canSend}
-            title="Send message (Enter)"
-            aria-label="Send message"
-            type="button"
-            id="send-btn"
-          >
-            {isLoading ? (
-              <span style={{ display: "inline-block", animation: "spin 1s linear infinite" }}>
-                ⟳
-              </span>
-            ) : (
-              "↑"
-            )}
-          </button>
+          {/* Send / Stop Button */}
+          {isLoading ? (
+            <button
+              className="send-btn"
+              style={{ background: "#ef4444" }}
+              onClick={onStop}
+              title="Stop generating"
+              aria-label="Stop generating"
+              type="button"
+              id="stop-btn"
+            >
+              ⏹
+            </button>
+          ) : (
+            <button
+              className="send-btn"
+              onClick={handleSend}
+              disabled={!canSend}
+              title="Send message (Enter)"
+              aria-label="Send message"
+              type="button"
+              id="send-btn"
+            >
+              ↑
+            </button>
+          )}
         </div>
       </div>
 

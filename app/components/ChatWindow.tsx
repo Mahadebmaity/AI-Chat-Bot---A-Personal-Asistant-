@@ -10,6 +10,7 @@ interface ChatWindowProps {
   messages: Message[];
   isLoading: boolean;
   onSuggestion: (text: string) => void;
+  onRegenerate?: () => void;
 }
 
 const SUGGESTIONS = [
@@ -19,7 +20,12 @@ const SUGGESTIONS = [
   "Summarize the history of the internet",
 ];
 
-export default function ChatWindow({ messages, isLoading, onSuggestion }: ChatWindowProps) {
+export default function ChatWindow({
+  messages,
+  isLoading,
+  onSuggestion,
+  onRegenerate,
+}: ChatWindowProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
@@ -118,6 +124,16 @@ export default function ChatWindow({ messages, isLoading, onSuggestion }: ChatWi
                 >
                   {copiedId === msg.id ? "✓ Copied!" : "📋 Copy"}
                 </button>
+                {onRegenerate && messages[messages.length - 1]?.id === msg.id && !isLoading && (
+                  <button
+                    className="action-btn"
+                    onClick={onRegenerate}
+                    aria-label="Regenerate response"
+                    title="Regenerate response"
+                  >
+                    🔄 Retry
+                  </button>
+                )}
               </div>
             )}
           </div>

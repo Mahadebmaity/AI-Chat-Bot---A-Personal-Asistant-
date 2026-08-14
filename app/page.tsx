@@ -1,5 +1,5 @@
 "use client";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import Sidebar from "@/app/components/Sidebar";
 import ChatWindow from "@/app/components/ChatWindow";
 import MessageInput from "@/app/components/MessageInput";
@@ -21,6 +21,8 @@ export default function Home() {
     createSession,
     switchSession,
     deleteSession,
+    renameSession,
+    removeLastAIMessage,
     addMessage,
     appendToLastAIMessage,
     setSessionInteractionId,
@@ -30,6 +32,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [suggestionText, setSuggestionText] = useState("");
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // Modals state
   const [isAuthOpen, setIsAuthOpen] = useState(false);
@@ -49,6 +52,9 @@ export default function Home() {
 
       setIsLoading(true);
 
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+
       try {
         const headers: Record<string, string> = { "Content-Type": "application/json" };
         const customKey = user?.preferences?.apiKey || (typeof window !== "undefined" ? localStorage.getItem("my-assistant-api-key") : null);
@@ -59,6 +65,7 @@ export default function Home() {
         const response = await fetch("/api/chat", {
           method: "POST",
           headers,
+          signal: controller.signal,
           body: JSON.stringify({
             message,
             model,
@@ -111,18 +118,43 @@ export default function Home() {
             }
           }
         }
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : "Network error";
-        appendToLastAIMessage(
-          sessionId,
-          `⚠️ Connection error: ${msg}. Please check your internet connection.`
-        );
+      } catch (err: unknown) {
+        if (err instanceof Error && err.name === "AbortError") {
+          appendToLastAIMessage(sessionId, " ⏹ *(Stopped)*");
+        } else {
+          const msg = err instanceof Error ? err.message : "Network error";
+          appendToLastAIMessage(
+            sessionId,
+            `⚠️ Connection error: ${msg}. Please check your internet connection.`
+          );
+        }
       } finally {
         setIsLoading(false);
+        abortControllerRef.current = null;
       }
     },
     [activeSession, isLoading, addMessage, appendToLastAIMessage, setSessionInteractionId, user]
   );
+
+  function handleStopGeneration() {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+  }
+
+  function handleRegenerate() {
+    if (!activeSession || isLoading || activeSession.messages.length === 0) return;
+
+    // Find the last user message
+    const lastUserMsg = [...activeSession.messages].reverse().find((m) => m.role === "user");
+    if (!lastUserMsg) return;
+
+    // Remove the last AI message
+    removeLastAIMessage(activeSession.id);
+
+    // Re-send the prompt
+    sendMessage(lastUserMsg.content, activeSession.model);
+  }
 
   function handleSuggestion(text: string) {
     setSuggestionText(text);
@@ -186,6 +218,7 @@ export default function Home() {
         onNewChat={handleNewChat}
         onSwitch={switchSession}
         onDelete={deleteSession}
+        onRename={renameSession}
         onToggleTheme={toggleTheme}
         onClose={() => setSidebarOpen(false)}
         onOpenProfile={() => setIsProfileOpen(true)}
@@ -198,7 +231,7 @@ export default function Home() {
       <main className="chat-main">
         {/* Top Bar */}
         <div className="chat-topbar">
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: 0, flex: 1 }}>
             <button
               className="hamburger"
               onClick={() => setSidebarOpen(true)}
@@ -242,11 +275,13 @@ export default function Home() {
           messages={activeSession?.messages ?? []}
           isLoading={isLoading}
           onSuggestion={handleSuggestion}
+          onRegenerate={handleRegenerate}
         />
 
         {/* Input */}
         <MessageInput
           onSend={sendMessage}
+          onStop={handleStopGeneration}
           isLoading={isLoading}
           initialValue={suggestionText}
           onModelChange={handleModelChange}

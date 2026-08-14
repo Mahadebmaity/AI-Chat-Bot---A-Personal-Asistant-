@@ -177,6 +177,25 @@ export function useChatSessions() {
     []
   );
 
+  const renameSession = useCallback((sessionId: string, newTitle: string) => {
+    setSessions((prev) =>
+      prev.map((s) => (s.id === sessionId ? { ...s, title: newTitle.trim() || s.title } : s))
+    );
+  }, []);
+
+  const removeLastAIMessage = useCallback((sessionId: string) => {
+    setSessions((prev) =>
+      prev.map((s) => {
+        if (s.id !== sessionId) return s;
+        const messages = [...s.messages];
+        if (messages.length > 0 && messages[messages.length - 1].role === "ai") {
+          messages.pop();
+        }
+        return { ...s, messages };
+      })
+    );
+  }, []);
+
   const updateSessionModel = useCallback((sessionId: string, model: string) => {
     setSessions((prev) =>
       prev.map((s) => (s.id === sessionId ? { ...s, model } : s))
@@ -190,6 +209,8 @@ export function useChatSessions() {
     createSession,
     switchSession,
     deleteSession,
+    renameSession,
+    removeLastAIMessage,
     addMessage,
     updateLastAIMessage,
     appendToLastAIMessage,

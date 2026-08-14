@@ -12,6 +12,7 @@ interface SidebarProps {
   onNewChat: () => void;
   onSwitch: (id: string) => void;
   onDelete: (id: string) => void;
+  onRename?: (id: string, newTitle: string) => void;
   onToggleTheme: () => void;
   onClose: () => void;
   onOpenProfile: () => void;
@@ -29,6 +30,7 @@ export default function Sidebar({
   onNewChat,
   onSwitch,
   onDelete,
+  onRename,
   onToggleTheme,
   onClose,
   onOpenProfile,
@@ -36,6 +38,13 @@ export default function Sidebar({
   onOpenAuth,
   onLogout,
 }: SidebarProps) {
+  function handlePromptRename(e: React.MouseEvent, session: ChatSession) {
+    e.stopPropagation();
+    const newName = window.prompt("Rename chat:", session.title);
+    if (newName && newName.trim()) {
+      onRename?.(session.id, newName.trim());
+    }
+  }
   return (
     <>
       {/* Overlay for mobile */}
@@ -89,17 +98,27 @@ export default function Sidebar({
               <span className="session-title" title={session.title}>
                 {session.title}
               </span>
-              <button
-                className="session-delete"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDelete(session.id);
-                }}
-                title="Delete chat"
-                aria-label={`Delete chat: ${session.title}`}
-              >
-                ✕
-              </button>
+              <div style={{ display: "flex", gap: "2px" }} onClick={(e) => e.stopPropagation()}>
+                <button
+                  className="session-delete"
+                  onClick={(e) => handlePromptRename(e, session)}
+                  title="Rename chat"
+                  aria-label={`Rename chat: ${session.title}`}
+                >
+                  ✏️
+                </button>
+                <button
+                  className="session-delete"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(session.id);
+                  }}
+                  title="Delete chat"
+                  aria-label={`Delete chat: ${session.title}`}
+                >
+                  ✕
+                </button>
+              </div>
             </div>
           ))}
         </nav>

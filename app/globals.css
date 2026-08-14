@@ -699,12 +699,95 @@ body {
     left: 0; top: 0; bottom: 0;
     transform: translateX(-100%);
     box-shadow: var(--shadow-lg);
+    width: 280px;
+    max-width: 80vw;
   }
   .sidebar.open {
     transform: translateX(0);
   }
   .sidebar-overlay.open { display: block; }
   .hamburger { display: flex; }
+
+  .chat-title {
+    max-width: 180px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 14px;
+  }
+
+  .message-bubble {
+    max-width: min(88%, 680px);
+    font-size: 14px;
+    padding: 12px 14px;
+  }
+
+  .welcome-title {
+    font-size: 22px;
+  }
+
+  .welcome-subtitle {
+    font-size: 13.5px;
+  }
+
+  .modal-content {
+    padding: 20px 16px;
+    max-width: calc(100vw - 24px);
+    border-radius: var(--radius-md);
+  }
+
+  .chat-window {
+    padding: 16px 12px;
+  }
+
+  .input-bar {
+    padding: 10px 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .chat-title {
+    max-width: 120px;
+    font-size: 13px;
+  }
+
+  .welcome-suggestions {
+    grid-template-columns: 1fr;
+    max-width: 100%;
+  }
+
+  .message-bubble {
+    max-width: 93%;
+    padding: 10px 12px;
+    font-size: 13.5px;
+  }
+
+  .message-avatar {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+
+  .avatar-picker-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .profile-stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+  }
+
+  .stat-card {
+    padding: 8px 4px;
+  }
+
+  .stat-number {
+    font-size: 14px;
+  }
+
+  .stat-label {
+    font-size: 9.5px;
+  }
 }
 
 /* ─── Animations ─── */
