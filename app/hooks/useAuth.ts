@@ -7,6 +7,7 @@ export interface UserPreferences {
   voiceLanguage: string;
   customInstructions: string;
   responseStyle: string; // e.g. "balanced", "concise", "detailed"
+  apiKey?: string;
 }
 
 export interface User {

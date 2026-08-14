@@ -50,9 +50,14 @@ export default function Home() {
       setIsLoading(true);
 
       try {
+        const headers: Record<string, string> = { "Content-Type": "application/json" };
+        if (user?.preferences?.apiKey) {
+          headers["x-gemini-api-key"] = user.preferences.apiKey;
+        }
+
         const response = await fetch("/api/chat", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers,
           body: JSON.stringify({
             message,
             model,

@@ -14,12 +14,14 @@ You help with: writing, coding, research, brainstorming, analysis, math, and eve
 
 export async function POST(request: NextRequest) {
   try {
-    const apiKey = process.env.GEMINI_API_KEY;
+    const customKey = request.headers.get("x-gemini-api-key");
+    const apiKey = (customKey && customKey.trim()) ? customKey.trim() : process.env.GEMINI_API_KEY;
+
     if (!apiKey || apiKey === "your_gemini_api_key_here") {
       return NextResponse.json(
         {
           error:
-            "GEMINI_API_KEY is not set. Please add your API key to .env.local. Get a free key at https://aistudio.google.com/app/apikey",
+            "GEMINI_API_KEY is not set. Add GEMINI_API_KEY to your Vercel Environment Variables (or enter your key in App Settings ⚙️). Get a free key at https://aistudio.google.com/app/apikey",
         },
         { status: 401 }
       );

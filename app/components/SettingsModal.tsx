@@ -209,6 +209,24 @@ export default function SettingsModal({
               </select>
             </div>
 
+            {/* Custom API Key Override */}
+            <div className="form-group">
+              <label className="form-label" htmlFor="settings-api-key">Gemini API Key (Optional Override)</label>
+              <p className="form-help-text">
+                Enter your personal API key if not configured in Vercel. Stored safely in your browser.
+              </p>
+              <input
+                id="settings-api-key"
+                type="password"
+                className="form-input"
+                placeholder="AIzaSy..."
+                value={user?.preferences?.apiKey || ""}
+                onChange={(e) => {
+                  onUpdatePreferences({ apiKey: e.target.value.trim() });
+                }}
+              />
+            </div>
+
             <button
               type="button"
               className="modal-primary-btn"
