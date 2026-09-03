@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 export interface Message {
   id: string;
@@ -17,14 +17,11 @@ export interface ChatSession {
   model: string;
 }
 
-const STORAGE_KEY = "my-assistant-sessions";
-const ACTIVE_KEY = "my-assistant-active";
-
 function generateId() {
   return Math.random().toString(36).slice(2) + Date.now().toString(36);
 }
 
-function createNewSession(model = "gemini-3.6-flash"): ChatSession {
+function createNewSession(model = "gemini-3.7-flash"): ChatSession {
   return {
     id: generateId(),
     title: "New Chat",
@@ -35,49 +32,86 @@ function createNewSession(model = "gemini-3.6-flash"): ChatSession {
   };
 }
 
-export function useChatSessions() {
+export function useChatSessions(
+  userId?: string | null,
+  isAuthLoaded: boolean = true,
+  defaultModel: string = "gemini-3.7-flash"
+) {
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [activeId, setActiveId] = useState<string>("");
+  const loadedKeyRef = useRef<string | null>(null);
 
-  // Load from localStorage on mount
+  // Isolate sessions per user ID; guests get isolated guest key
+  const storageKey = userId
+    ? `my-assistant-sessions_${userId}`
+    : "my-assistant-sessions_guest";
+  const activeKey = userId
+    ? `my-assistant-active_${userId}`
+    : "my-assistant-active_guest";
+
+  // Load sessions when user changes or auth state finishes loading
   useEffect(() => {
+    if (!isAuthLoaded) return;
+
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      const storedActive = localStorage.getItem(ACTIVE_KEY);
+      let stored = localStorage.getItem(storageKey);
+      let storedActive = localStorage.getItem(activeKey);
+
+      // Backwards-compatibility only for guest mode with pre-existing legacy data
+      if (!stored && !userId) {
+        const legacy = localStorage.getItem("my-assistant-sessions");
+        const legacyActive = localStorage.getItem("my-assistant-active");
+        if (legacy) {
+          stored = legacy;
+          storedActive = legacyActive;
+        }
+      }
+
       if (stored) {
         const parsed: ChatSession[] = JSON.parse(stored);
-        if (parsed.length > 0) {
+        if (Array.isArray(parsed) && parsed.length > 0) {
           setSessions(parsed);
           const active = storedActive && parsed.find((s) => s.id === storedActive);
           setActiveId(active ? active.id : parsed[0].id);
+          loadedKeyRef.current = storageKey;
           return;
         }
       }
-    } catch {
-      // ignore parse errors
+    } catch (e) {
+      console.error("Error loading chat sessions:", e);
     }
-    // Default: start with one new session
-    const initial = createNewSession();
-    setSessions([initial]);
-    setActiveId(initial.id);
-  }, []);
 
-  // Persist on every change
+    // If brand new user or no sessions, create a single clean new chat session
+    const fresh = createNewSession(defaultModel);
+    setSessions([fresh]);
+    setActiveId(fresh.id);
+    loadedKeyRef.current = storageKey;
+  }, [userId, isAuthLoaded, storageKey, activeKey, defaultModel]);
+
+  // Persist on change, strictly ensuring we only save once current user's state is loaded
   useEffect(() => {
+    if (!isAuthLoaded) return;
+    if (loadedKeyRef.current !== storageKey) return; // Prevent overwriting newly switched user's storage
+
     if (sessions.length > 0) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
-      localStorage.setItem(ACTIVE_KEY, activeId);
+      localStorage.setItem(storageKey, JSON.stringify(sessions));
+      if (activeId) {
+        localStorage.setItem(activeKey, activeId);
+      }
     }
-  }, [sessions, activeId]);
+  }, [sessions, activeId, storageKey, activeKey, isAuthLoaded]);
 
   const activeSession = sessions.find((s) => s.id === activeId) ?? sessions[0];
 
-  const createSession = useCallback((model?: string) => {
-    const newSession = createNewSession(model);
-    setSessions((prev) => [newSession, ...prev]);
-    setActiveId(newSession.id);
-    return newSession;
-  }, []);
+  const createSession = useCallback(
+    (model?: string) => {
+      const newSession = createNewSession(model || defaultModel);
+      setSessions((prev) => [newSession, ...prev]);
+      setActiveId(newSession.id);
+      return newSession;
+    },
+    [defaultModel]
+  );
 
   const switchSession = useCallback((id: string) => {
     setActiveId(id);
@@ -88,7 +122,7 @@ export function useChatSessions() {
       setSessions((prev) => {
         const filtered = prev.filter((s) => s.id !== id);
         if (filtered.length === 0) {
-          const fresh = createNewSession();
+          const fresh = createNewSession(defaultModel);
           setActiveId(fresh.id);
           return [fresh];
         }
@@ -98,7 +132,7 @@ export function useChatSessions() {
         return filtered;
       });
     },
-    [activeId]
+    [activeId, defaultModel]
   );
 
   const addMessage = useCallback(

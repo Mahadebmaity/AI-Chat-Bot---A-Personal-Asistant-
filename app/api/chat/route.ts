@@ -111,7 +111,20 @@ export async function POST(request: NextRequest) {
           const doneData = JSON.stringify({ type: "done" });
           controller.enqueue(encoder.encode(`data: ${doneData}\n\n`));
         } catch (err: unknown) {
-          const errorMessage = err instanceof Error ? err.message : "Stream error";
+          let errorMessage = err instanceof Error ? err.message : "Stream error";
+          try {
+            const parsed = JSON.parse(errorMessage);
+            if (parsed?.error?.message) {
+              try {
+                const inner = JSON.parse(parsed.error.message);
+                if (inner?.error?.message) errorMessage = inner.error.message;
+              } catch {
+                errorMessage = parsed.error.message;
+              }
+            }
+          } catch {
+            // keep raw error message
+          }
           const errorData = JSON.stringify({ type: "error", error: errorMessage });
           controller.enqueue(encoder.encode(`data: ${errorData}\n\n`));
         } finally {
@@ -129,7 +142,23 @@ export async function POST(request: NextRequest) {
     });
   } catch (err: unknown) {
     console.error("[/api/chat] Error:", err);
-    const message = err instanceof Error ? err.message : "Internal server error";
+    let message = "Internal server error";
+    if (err instanceof Error) {
+      message = err.message;
+      try {
+        const parsed = JSON.parse(message);
+        if (parsed?.error?.message) {
+          try {
+            const inner = JSON.parse(parsed.error.message);
+            if (inner?.error?.message) message = inner.error.message;
+          } catch {
+            message = parsed.error.message;
+          }
+        }
+      } catch {
+        // keep message as-is
+      }
+    }
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

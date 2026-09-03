@@ -1,5 +1,5 @@
 "use client";
-import { useState, useCallback, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import Sidebar from "@/app/components/Sidebar";
 import ChatWindow from "@/app/components/ChatWindow";
 import MessageInput from "@/app/components/MessageInput";
@@ -13,7 +13,7 @@ import { useAuth } from "@/app/hooks/useAuth";
 
 export default function Home() {
   const { theme, toggleTheme } = useTheme();
-  const { user, login, signup, logout, updateProfile, updatePreferences } = useAuth();
+  const { user, isAuthLoaded, login, signup, logout, updateProfile, updatePreferences } = useAuth();
   const {
     sessions,
     activeSession,
@@ -24,52 +24,65 @@ export default function Home() {
     renameSession,
     removeLastAIMessage,
     addMessage,
+    updateLastAIMessage,
     appendToLastAIMessage,
     setSessionInteractionId,
     updateSessionModel,
-  } = useChatSessions();
+  } = useChatSessions(user?.id, isAuthLoaded, user?.preferences?.defaultModel);
 
-  const [isLoading, setIsLoading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [suggestionText, setSuggestionText] = useState("");
-  const abortControllerRef = useRef<AbortController | null>(null);
 
-  // Modals state
+  // Modal states
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
+  const abortControllerRef = useRef<AbortController | null>(null);
+
   const sendMessage = useCallback(
-    async (message: string, model: string) => {
-      if (!activeSession || isLoading) return;
+    async (text: string, modelOverride?: string) => {
+      if (!text.trim() || isLoading) return;
 
-      const sessionId = activeSession.id;
+      const currentSession = activeSession;
+      if (!currentSession) return;
 
-      // Add user message
-      addMessage(sessionId, { role: "user", content: message });
-      // Add empty AI placeholder
+      const sessionId = currentSession.id;
+      const selectedModel =
+        modelOverride || currentSession.model || user?.preferences?.defaultModel || "gemini-3.7-flash";
+
+      // 1. Add user message
+      addMessage(sessionId, { role: "user", content: text });
+
+      // 2. Add placeholder AI message
       addMessage(sessionId, { role: "ai", content: "" });
 
       setIsLoading(true);
-
-      const controller = new AbortController();
-      abortControllerRef.current = controller;
+      const abortController = new AbortController();
+      abortControllerRef.current = abortController;
 
       try {
-        const headers: Record<string, string> = { "Content-Type": "application/json" };
-        const customKey = user?.preferences?.apiKey || (typeof window !== "undefined" ? localStorage.getItem("my-assistant-api-key") : null);
-        if (customKey && customKey.trim()) {
-          headers["x-gemini-api-key"] = customKey.trim();
+        // Build history from current messages
+        const currentMessages = currentSession.messages;
+
+        // Custom API Key override if user provided one in Settings
+        const headers: Record<string, string> = {
+          "Content-Type": "application/json",
+        };
+        if (user?.preferences?.apiKey && user.preferences.apiKey.trim()) {
+          headers["x-gemini-api-key"] = user.preferences.apiKey.trim();
         }
 
         const response = await fetch("/api/chat", {
           method: "POST",
           headers,
-          signal: controller.signal,
+          signal: abortController.signal,
           body: JSON.stringify({
-            message,
-            model,
-            history: activeSession.messages.map((m) => ({
+            message: text,
+            model: selectedModel,
+            previousInteractionId: currentSession.previousInteractionId,
+            history: currentMessages.map((m) => ({
               role: m.role,
               content: m.content,
             })),
@@ -174,6 +187,10 @@ export default function Home() {
   }
 
   function handleClearAllChats() {
+    const storageKey = user?.id ? `my-assistant-sessions_${user.id}` : "my-assistant-sessions_guest";
+    const activeKey = user?.id ? `my-assistant-active_${user.id}` : "my-assistant-active_guest";
+    localStorage.removeItem(storageKey);
+    localStorage.removeItem(activeKey);
     localStorage.removeItem("my-assistant-sessions");
     localStorage.removeItem("my-assistant-active");
     window.location.reload();
